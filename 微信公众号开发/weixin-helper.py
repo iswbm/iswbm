@@ -323,7 +323,7 @@ def get_qr_code(source_name):
     LOG.info(f"请求创建来源是 {source_name} 的永久性二维码: ")
     access_token = client.grant_token()
     url = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + access_token
-    data = {"action_name": "QR_LIMIT_SCENE", "action_info": {"scene": {"scene_str": s             ource_name}}}
+    data = {"action_name": "QR_LIMIT_SCENE", "action_info": {"scene": {"scene_str": source_name}}}
     response = requests.post(url, data=data)
     if "ticket" not in response.json():
         print("永久性二维码创建失败，需要你是一个认证过的服务号")
@@ -370,9 +370,9 @@ def create_memu():
                 "name": "指路",
                 "sub_button": [
                     {
-                        "type": "click",
+                        "type": "view",
                         "name": "暗号",
-                        "key": "signal"
+                        "url": "https://t.1yb.co/7b2A"
                     },
                     {
                         "type": "view",
