@@ -24,8 +24,7 @@ Here are some ideas to get you started:
 - 📖 4️⃣ 电子书《Go编程时光》：http://golang.iswbm.com
 - ✅ 微信公众号：Python编程时光
 
-![](http://image.iswbm.com/20210112233812.png)
 
 <div align=center>
-<img src="https://ftp.bmp.ovh/imgs/2020/07/112254f0199e3d4f.jpg" alt="wechat" width="300" height="150" align="bottom" />
+<img src="http://image.iswbm.com/20210112233812.png" alt="wechat" width="300" height="150" align="bottom" />
 </div>
