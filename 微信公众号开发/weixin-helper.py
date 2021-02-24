@@ -3,51 +3,121 @@
 import re
 import time
 import logging
-import sqlite3
+import threading
 from datetime import datetime
-
-import response
+from functools import wraps
 
 import werobot
 import click
-import requests
+import toml
+
+import pandas as pd
 from werobot.replies import ImageReply, ArticlesReply, Article
 from werobot.client import Client
+from sqlalchemy import Column, Integer, String, Boolean, Date, create_engine, ForeignKey, func
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+cfg_dict = toml.load("/etc/werobot/werobot.toml")
+config = cfg_dict["werobot"]["config"]
+mysql_config = cfg_dict["mysql"]
+str_key_response_mapping = cfg_dict["werobot"]["keyword"]["string"]
+re_key_response_mapping = cfg_dict["werobot"]["keyword"]["regex"]
+lottery_draw_info = cfg_dict["werobot"]["keyword"]["lottery"]
+media_ids = cfg_dict["werobot"]["media"]
 
 
-config = {
-    "APP_ID": "wxfa3723037aa13b99",
-    "APP_SECRET": "b6efade9afe3e24c175ae1c97da1afaf"
-}
-SQLITE_DB_FILE = "/home/werobot.db"
+lock = threading.Lock()
+Base = declarative_base()
 
-class DB:
-    SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS SUBSCRIBE (ID INTEGER PRIMARY KEY AUTOINCREMENT,OPENID CHAR(28) NOT NULL,ACTION_TYPE TEXT NOT NULL, TIME TEXT NOT NULL);"
-    SQL_INSERT_ONE_DATA = "INSERT INTO SUBSCRIBE(openid, action_type, time) VALUES(?, ?, ?);"
-    SQL_QUERY_ONE_DATA = "SELECT * FROM SUBSCRIBE WHERE openid='{}' AND action_type='{}'"
-    SQL_DEL_ONE_DATA = "DELETE FROM SUBSCRIBE where openid ='{}'"
-    SQL_GET_BLACKLIST = "SELECT * FROM SUBSCRIBE WHERE action_type='unsubscribe' AND time='{}'"
-
+class MYSQL:
     def __init__(self):
-        self.conn = sqlite3.connect(SQLITE_DB_FILE)
-        self.cursor = self.conn.cursor()
+        mysql_uri = 'mysql+pymysql://{user}:{password}@{host}:{port}/{database}'.format(**mysql_config)
+        self.engine = create_engine(mysql_uri)
+        DBsession = sessionmaker(bind=self.engine)
+        self.session = DBsession()
         self.create_db_table()
 
+
     def create_db_table(self):
-        self.conn.execute(self.SQL_CREATE_TABLE)
+        Base.metadata.create_all(self.engine, checkfirst=True)
 
-    def insert(self, user_id, action_type, unsubscribe_time):
-        self.conn.execute(self.SQL_INSERT_ONE_DATA, (user_id, action_type, unsubscribe_time))
-        self.conn.commit()
+    def add_subscribe(self, user_info):
+        openid = user_info["openid"]
+        nickname = user_info["nickname"]
 
-    def query_user_by_openid(self, openid, action_type):
-        return self.cursor.execute(self.SQL_QUERY_ONE_DATA.format(openid, action_type)).fetchall()
+        if not self.session.query(User).filter_by(openid=openid).all():
+            self.session.add(User(openid=openid, name=nickname))
+            self.session.commit()
 
-    def delete_by_openid(self, openid):
-        self.cursor.execute(self.SQL_DEL_ONE_DATA.format(openid))
+        subscribe_time = datetime.fromtimestamp(user_info["subscribe_time"])
+        self.session.add(Subscribe(userid=openid, action="关注", action_time=subscribe_time))
+
+    def cancel_subscribe(self, openid):
+        if not self.session.query(User).filter_by(openid=openid).all():
+            self.session.add(User(openid=openid, name="unknown"))
+            self.session.commit()
+        self.session.query(User).filter_by(openid=openid).update({User.baned: True})
+        self.session.add(Subscribe(userid=openid, action="取关"))
+        self.session.commit()
+
+    def add_message(self, user_info, message):
+        if not self.session.query(User).filter_by(openid=user_info["openid"]).all():
+            self.session.add(User(openid=user_info["openid"], name=user_info["nickname"]))
+            self.session.commit()
+        self.session.add(Message(userid=user_info["openid"], message=message))
+        self.session.commit()
+
+    def is_banned(self, openid):
+        return self.session.query(User).filter_by(openid=openid, baned=True).all()
+
+    def remove_from_blacklist(self, openid):
+        self.session.query(User).filter_by(openid=openid).update({User.baned: False})
+        self.session.commit()
 
     def get_all_blacklist(self):
-        return self.cursor.execute(self.SQL_GET_BLACKLIST.format(datetime.now().strftime("%Y-%m-%d"))).fetchall()
+        return self.session.query(Subscribe).filter_by(action="取关", action_time=datetime.today()).all()
+
+    def recommend_info(self, keyword):
+        result = self.session.query(Message.date, func.count(Message.date)).filter_by(message=keyword).group_by("date").all()
+        if not result:
+            return "该关键词暂无人关注"
+
+        lines = ["关键词: {}".format(keyword)]
+        for data in result:
+            line = "{} {}".format(data[0].strftime("%Y-%m-%d"), data[1])
+            lines.append(line)
+
+        return '\n'.join(lines)
+
+
+# 自定义的表
+class User(Base):
+    __tablename__ = 'users'
+
+    # 定义字段
+    openid = Column(String(28), primary_key=True)
+    name = Column(String(255))
+    baned = Column(Boolean, default=False)
+
+
+class Subscribe(Base):
+    __tablename__ = 'subscribe'
+    id = Column(Integer, primary_key=True)
+    userid = Column(String(28), ForeignKey("users.openid"))
+    action = Column(String(10))
+    action_time = Column(Date, default=datetime.now())
+
+
+class Message(Base):
+    __tablename__ = 'messages'
+
+    # 定义字段
+    id = Column(Integer, primary_key=True)
+    userid = Column(String(28), ForeignKey("users.openid"))
+    message = Column(String(255))
+    date = Column(Date, default=datetime.now)
+
 
 def get_logger(logpath):
     logger = logging.getLogger(__name__)
@@ -65,346 +135,236 @@ def get_writer(file_path):
     return open(file_path, '+a')
 
 LOG = get_logger("/var/log/werobot.log")
-csver = get_writer("/var/log/keyword_response.csv")
+# csver = get_writer("/var/log/keyword_response.csv")
 robot = werobot.WeRoBot(token='iswbm', logger=LOG)
 client = Client(config)
-db = DB()
+db = MYSQL()
 
-def get_all_image_items():
-    page_count = round(client.get_media_count()/20)
-    offset_list = map(lambda x: x * 20, range(page_count))
-    for offset in offset_list:
-        all_items_json = client.get_media_list(media_type="image", offset=offset, count=20)
+def upload_image_media(client, image_path):
+    print(client.upload_permanent_media(media_type="image", media_file=open(image_path, "rb")))
 
 
-def upload_image_media(image_path):
-    response = client.upload_permanent_media(media_type="image", media_file=open(image_path, "rb"))
-    # 存放数据库
-    return response
+def save_data_and_check_black_list(dbclient):
+    def is_in_black_list(user_id):
+        if db.is_banned(user_id):
+            return True
 
-def is_in_black_list(user_id):
-    if db.query_user_by_openid(user_id, "unsubscribe"):
-        return True
-
-
-def save_data(nickname, type, keyword=""):
-    if type == "回复":
-        LOG.info(nickname + " 正在查询 '{}'".format(keyword))
-    elif type == "关注":
-        LOG.info(nickname + " 刚刚关注了你!")
-    elif type == "取关":
-        LOG.info(nickname + " 刚刚取关了你!")
-    csver.write("{},{},{},{}\n".format(nickname, type, keyword,datetime.now().strftime("%Y-%m-%d")));csver.flush()
-
-@robot.subscribe
-def subscribe(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "关注")
-    db.insert(user_info["openid"],"subscribe", datetime.now().strftime("%Y-%m-%d"))
-    client.send_text_message(message.source, content=response.welcome.format(user_info["nickname"]))
-    # client.send_image_message(message.source, media_id="DRoZL-mq_4ZH0KQ3CR5NuOxT5jau_9PHD3EWzb4t8ls")
-
-@robot.unsubscribe
-def unsubscribe(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["openid"], "取关")
-    db.insert(user_info["openid"], "unsubscribe", datetime.now().strftime("%Y-%m-%d"))
+    def wrapper(func):
+        @wraps(func)
+        def deco(*args, **kw):
+            message = args[0]
+            user_info = client.get_user_info(message.source)
+            LOG.info("user_id: {}, user_info: {}".format(message.source, user_info))
+            LOG.info("{} 正在查询 '{}'".format(user_info["nickname"], message.content))
+            dbclient.add_message(user_info, message.content)
+            if is_in_black_list(user_info["openid"]):
+                LOG.info(
+                    "{} (id: {})回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], user_info["openid"],
+                                                                         message.content))
+                return cfg_dict["werobot"]["common"]["in_black_list"]
+            return func(*args, **kw)
+        return deco
+    return wrapper
 
 
-@robot.filter('暗号')
-def subscribe(message):
-    user_info = client.get_user_info(message.source)
-    if is_in_black_list(user_info["openid"]):
-        return response.in_black_list
-    reply = ImageReply(message=message, media_id="DRoZL-mq_4ZH0KQ3CR5NuOxT5jau_9PHD3EWzb4t8ls")
-    return reply
+class WerobotBackend:
+    def __init__(self, robot, dbclient):
+        self.robot = robot
+        self.dbclient = dbclient
+        self.register_events()
+        self.register_keywords()
 
-@robot.filter('vip', 'VIP', '1024', 'more')
-def get_vip_code(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    return response.vip
+    def register_events(self):
+        def subscribe(message):
+            user_info = client.get_user_info(message.source)
+            LOG.info("{}({}) 刚刚关注了你".format(user_info["nickname"], user_info["openid"]))
+            self.dbclient.add_subscribe(user_info)
+            client.send_text_message(message.source,
+                                     content=cfg_dict["werobot"]["common"]["welcome"].format(user_info["nickname"]))
 
-@robot.filter('blog', 'BLOG')
-def get_blog(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    reply = ArticlesReply(message=message)
-    article = Article(
-        title="王炳明の博客",
-        description="明哥的个人网站",
-        img="https://mmbiz.qpic.cn/mmbiz_jpg/UFM3uMlAXxMehvNJYJ5uwlE1n2rfwbUkHl4MXaBUJO8xflmdLmNShqK9iaMQaLeqbpLbicGHe5V8MyibmhZ9lqbkA/0?wx_fmt=jpeg",
-        url="https://iswbm.com"
-    )
-    reply.add_article(article)
-    client.send_text_message(message.source, content=response.blog)
-    return reply
+        def unsubscribe(message):
+            user_info = client.get_user_info(message.source)
+            # user_info: {'subscribe': 0, 'openid': 'ojde4wEz4QhPjJjhNApqgP4B8pTE', 'tagid_list': []}
+            LOG.info("{} 刚刚取关了你".format(user_info["openid"]))
+            self.dbclient.cancel_subscribe(user_info["openid"])
 
-@robot.filter('解压密码')
-def get_unzip_passwd(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    return response.unzip
+        def communication(message):
+            reply = ImageReply(message=message, media_id="mEloyztypmjpHsAx8NnTlyIcOmY2ql-PAdfs8fEJRJY")
+            return reply
 
+        def business(message):
+            reply = ImageReply(message=message, media_id="mEloyztypmjpHsAx8NnTlz4c8GiuEUxnBULz135LaF0")
+            return reply
 
-@robot.filter('pdf', 'PDF', "黑魔法", '666')
-def get_all_pdf(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    return response.pdf
+        self.robot.subscribe(subscribe)
+        self.robot.unsubscribe(unsubscribe)
+        self.robot.key_click("communication")(communication)
+        self.robot.key_click("business")(business)
 
-@robot.filter('1012')
-def get_pycharm_pdf(message):
-    '''
-    # 1012: Python猫
-    '''
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    return response.pycharm_pdf
+    def register_keywords(self):
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def str_response(message):
+            result = str_key_response_mapping.get(message.content)
+            return result
 
-@robot.filter("m")
-def get_index(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    reply = ArticlesReply(message=message)
-    article = Article(
-        title="三年的 Python 精华文章汇总",
-        description="专属于「{}」的干货目录".format(user_info["nickname"]),
-        img="https://mmbiz.qpic.cn/mmbiz_jpg/UFM3uMlAXxMehvNJYJ5uwlE1n2rfwbUkHl4MXaBUJO8xflmdLmNShqK9iaMQaLeqbpLbicGHe5V8MyibmhZ9lqbkA/0?wx_fmt=jpeg",
-        # url="https://t.1yb.co/69Kw"
-        url="https://github.com/iswbm/python-guide"
-    )
-    reply.add_article(article)
-    return reply
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def re_response(message, session, check_result):
+            keyword = check_result.re.pattern.replace(".*?", "")
+            return re_key_response_mapping.get(keyword, "回复有误")
 
-@robot.filter('pycharm')
-def get_pycharm_exe(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    return response.pycharm
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def get_user_info(message):
+            user_info = client.get_user_info(message.source)
+            subscribe_time = datetime.fromtimestamp(user_info["subscribe_time"])
+            now_time = datetime.now()
+            subscribe_time_str = subscribe_time.strftime("%Y-%m-%d %H:%M:%S")
+            days = (now_time - subscribe_time).days
+
+            rate_of_old_iron = self.calc_rate_of_old_iron(subscribe_time, now_time)
+            content = "昵称: {} \n关注时间: {} \n关注天数: {}\n老铁指数: {:.2%}".format(user_info["nickname"], subscribe_time_str,
+                                                                          days,
+                                                                          rate_of_old_iron)
+            LOG.info("老铁指数查询： \n" + content)
+            return content
+
+        def get_single_recommend_info(message):
+            # 解决因为中文导致的打印不对齐
+            pd.set_option('display.unicode.ambiguous_as_wide', True)
+            pd.set_option('display.unicode.east_asian_width', True)
+
+            msg_list = message.content.split(" ")
+            if len(msg_list) < 2:
+                return "格式输入有误，请重新输入。\n\n比如输入：\n单推 1012  -> 查询 1012 引流人数"
+
+            keyword = msg_list[1]
+            return self.dbclient.recommend_info(keyword)
+
+        def remove_from_blacklist(message):
+            msg_list = message.content.split(" ")
+            if len(msg_list) < 2 or len(msg_list[1]) != 28:
+                return "格式(移除 openid)输入有误，请重新输入。"
+
+            LOG.info("准备将 {} 移除黑名单".format(msg_list[1]))
+            self.dbclient.remove_from_blacklist(msg_list[1])
+            LOG.info("成功将 {} 移除黑名单".format(msg_list[1]))
+            return "成功将 {} 移除黑名单".format(msg_list[1])
+
+        def get_blacklist(message):
+            blacklist = []
+            all_list = self.dbclient.get_all_blacklist()
+            for obj in all_list:
+                blacklist.append(obj.userid)
+
+            if blacklist:
+                return '\n'.join(blacklist)
+            else:
+                return "今日暂无黑名单"
 
 
-@robot.filter(re.compile(".*?快捷键.*?"))
-def get_pycharm_exe(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.pycharm_keymap
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def get_signal_info(message):
+            reply = ImageReply(message=message, media_id=media_ids["signal_media_id"])
+            return reply
 
-    return response.pycharm
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def get_blog(message):
+            reply = ArticlesReply(message=message)
+            article = Article(
+                title="王炳明の博客",
+                description="明哥的个人网站",
+                img="https://mmbiz.qpic.cn/mmbiz_jpg/UFM3uMlAXxMehvNJYJ5uwlE1n2rfwbUkHl4MXaBUJO8xflmdLmNShqK9iaMQaLeqbpLbicGHe5V8MyibmhZ9lqbkA/0?wx_fmt=jpeg",
+                url="https://iswbm.com"
+            )
+            reply.add_article(article)
+            client.send_text_message(message.source, content=cfg_dict["werobot"]["common"]["blog"])
+            return reply
 
-def calc_rate_of_old_iron(subscribe_time, now_time):
-    start_time_int = int(time.mktime(datetime.strptime("2019-11-1", "%Y-%m-%d").timetuple()))
-    now_time_int = int(time.mktime(now_time.timetuple()))
-    subscribe_time_int = int(time.mktime(subscribe_time.timetuple()))
-    rate_of_old_iron = (now_time_int - subscribe_time_int) / (now_time_int - start_time_int)
-    return rate_of_old_iron
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def get_index(message):
+            user_info = client.get_user_info(message.source)
+            reply = ArticlesReply(message=message)
+            article = Article(
+                title="三年的 Python 精华文章汇总",
+                description="专属于「{}」的干货目录".format(user_info["nickname"]),
+                img="https://mmbiz.qpic.cn/mmbiz_jpg/UFM3uMlAXxMehvNJYJ5uwlE1n2rfwbUkHl4MXaBUJO8xflmdLmNShqK9iaMQaLeqbpLbicGHe5V8MyibmhZ9lqbkA/0?wx_fmt=jpeg",
+                # url="https://t.1yb.co/69Kw"
+                url="https://github.com/iswbm/PythonCodingTime"
+            )
+            reply.add_article(article)
+            return reply
 
-@robot.filter('老铁指数')
-def get_user_info(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    subscribe_time = datetime.fromtimestamp(user_info["subscribe_time"])
-    now_time = datetime.now()
-    subscribe_time_str = subscribe_time.strftime("%Y-%m-%d %H:%M:%S")
-    days = (now_time - subscribe_time).days
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def lottery_draw(message):
+            media_id = lottery_draw_info[message.content]["media_id"]
+            article_url = lottery_draw_info[message.content]["article_url"]
+            remark = lottery_draw_info[message.content]["remark"]
+            client.send_image_message(message.source, media_id=media_id)
+            client.send_text_message(message.source,
+                                     content='参与抽奖之前，请点击这个链接，阅读规则：<a href="{}">送红包规则，千万要看！</a>'.format(article_url))
+            return remark
 
-    rate_of_old_iron = calc_rate_of_old_iron(subscribe_time, now_time)
-    content = "昵称: {} \n关注时间: {} \n关注天数: {}\n老铁指数: {:.2%}".format(user_info["nickname"],subscribe_time_str, days,rate_of_old_iron)
-    LOG.info("老铁指数查询： \n" + content)
-    return content
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def not_found(message):
+            return "不好意思，没有 「{}」 这个关键词，你的「暗号」可能已经失效, 请联系管理员微信(微信号: hello-wbm)进行获取 。".format(message.content)
 
-@robot.filter(re.compile("移除 .*?"))
-def remove_from_blacklist(message):
-    msg_list = message.content.split(" ")
-    if len(msg_list) < 2 or len(msg_list[1]) != 28:
-        return "格式(移除 openid)输入有误，请重新输入。"
+        # TODO: 待使用
+        @save_data_and_check_black_list(dbclient=self.dbclient)
+        def return_single_pic(message):
+            reply = ImageReply(message=message, media_id="")
+            return reply
 
-    LOG.info("准备将 {} 移除黑名单")
-    db.delete_by_openid(msg_list[1])
-    LOG.info("成功将 {} 移除黑名单")
+        # 精准关键词
+        str_keywords = str_key_response_mapping.keys()
+        self.robot.filter(*str_keywords)(str_response)
 
-@robot.filter("黑名单")
-def get_blacklist(message):
-    blacklist = []
-    all_list = db.get_all_blacklist()
-    LOG.info(all_list)
-    for line in all_list:
-        blacklist.append(line[1])
+        # 模糊关键词
+        for key in re_key_response_mapping.keys():
+            self.robot.filter(re.compile(".*?{}.*?".format(key)))(re_response)
 
-    if blacklist:
-        return '\n'.join(blacklist)
-    else:
-        return "今日暂无黑名单"
+        self.robot.filter(re.compile("单推 .*?"))(get_single_recommend_info)
+        self.robot.filter(re.compile("移除 .*?"))(remove_from_blacklist)
 
-@robot.filter(re.compile("单推 .*?"))
-def get_single_recommend_info(message):
-    import pandas as pd
+        # 常用暗号
+        self.robot.filter('blog', 'BLOG')(get_blog)
+        self.robot.filter('m')(get_index)
+        self.robot.filter("黑名单")(get_blacklist)
+        self.robot.filter("老铁指数")(get_user_info)
+        self.robot.filter("暗号")(get_signal_info)
 
-    # 解决因为中文导致的打印不对齐
-    pd.set_option('display.unicode.ambiguous_as_wide', True)
-    pd.set_option('display.unicode.east_asian_width', True)
+        # 抽奖专用
+        for code in lottery_draw_info.keys():
+            self.robot.filter(code)(lottery_draw)
 
-    msg_list = message.content.split(" ")
-    if len(msg_list) < 2:
-        return "格式输入有误，请重新输入。\n\n比如输入：\n单推 1012  -> 查询 1012 引流人数"
+        self.robot.text(not_found)
 
-    keyword = msg_list[1]
-    all_df = pd.read_csv('/var/log/keyword_response.csv')
-    new_df = all_df[(all_df.keyword == keyword)]
-    result = str(new_df.groupby("date")["date"].count())
+    @staticmethod
+    def calc_rate_of_old_iron(subscribe_time, now_time):
+        start_time_int = int(time.mktime(datetime.strptime("2019-11-1", "%Y-%m-%d").timetuple()))
+        now_time_int = int(time.mktime(now_time.timetuple()))
+        subscribe_time_int = int(time.mktime(subscribe_time.timetuple()))
+        rate_of_old_iron = (now_time_int - subscribe_time_int) / (now_time_int - start_time_int)
+        return rate_of_old_iron
 
-    return result
+def migrate_users_data():
+    log = get_logger("/var/log/migrate.log")
+    next_openid = None
+    count = 0
+    while True:
+        res = client.get_followers(next_openid)
+        if res["count"] == 0:
+            break
 
-@robot.filter("dball")
-def get_dball(message):
-    user_info = client.get_user_info(message.source)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
+        next_openid = res["next_openid"]
 
-    return "链接:https://pan.baidu.com/s/1fs1HabmaqezaLxLbHCcqYQ  \n密码:v1mu"
+        for openid in res["data"]["openid"]:
+            count += 1
+            log.info("正在处理 {} 个用户信息: {}".format(count, openid))
+            user_info = client.get_user_info(openid)
+            db.add_subscribe(user_info)
 
-@robot.text
-def not_found(message):
-    user_info = client.get_user_info(message.source)
-    save_data(user_info["nickname"], "回复", message.content)
-    if is_in_black_list(user_info["openid"]):
-        LOG.info("{} 回复 {} 想获取资料，但之前取关过公众号，现在已经加入黑名单。".format(user_info["nickname"], message.content))
-        return response.in_black_list
-    
-    client.send_text_message(message.source, content=f"不好意思，没有 「{message.content}」 这个关键词，你的「暗号」可能输入有误 或者 已失效。\n\n请按如下暗号进行回复")
-    client.send_image_message(message.source, media_id="DRoZL-mq_4ZH0KQ3CR5NuOxT5jau_9PHD3EWzb4t8ls")
-
-@robot.key_click("signal")
-def wechat(message):
-    reply = ImageReply(message=message, media_id=response.signal_media_id)
-    return reply
-
-@robot.key_click("wechat")
-def wechat(message):
-    reply = ImageReply(message=message, media_id=response.wechat_media_id)
-    return reply
-
-def get_qr_code(source_name):
-    LOG.info(f"请求创建来源是 {source_name} 的永久性二维码: ")
-    access_token = client.grant_token()
-    url = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + access_token
-    data = {"action_name": "QR_LIMIT_SCENE", "action_info": {"scene": {"scene_str": source_name}}}
-    response = requests.post(url, data=data)
-    if "ticket" not in response.json():
-        print("永久性二维码创建失败，需要你是一个认证过的服务号")
-        LOG.error("永久性二维码创建失败，需要你是一个认证过的服务号")
-    else:
-        LOG.info("创建了永久性二维码: " + response.json())
-        print(response.json())
+        log.info("处理完成")
 
 
-def create_memu():
-    client.create_menu({
-        "button": [
-            {
-                "name": "专辑",
-                "sub_button": [
-                    {
-                        "type": "view",
-                        "name": "玩转PyCharm",
-                        "url": response.pycharm_album
-                    },
-                    {
-                        "type": "view",
-                        "name": "炫技Python",
-                        "url": response.show_album
-                    },
-                    {
-                        "type": "view",
-                        "name": "魔法Python",
-                        "url": response.magic_album
-                    },
-                    {
-                        "type": "view",
-                        "name": "网络知识",
-                        "url": response.network_album
-                    },
-                    {
-                        "type": "view",
-                        "name": "原创爆文",
-                        "url": response.origin_album
-                    },
-                ]
-            },
-            {
-                "name": "指路",
-                "sub_button": [
-                    {
-                        "type": "view",
-                        "name": "暗号",
-                        "url": "https://t.1yb.co/7b2A"
-                    },
-                    {
-                        "type": "view",
-                        "name": "投稿",
-                        "url": "https://t.1yb.co/71U5"
-                    },
-                    {
-                        "type": "view",
-                        "name": "目录",
-                        "url": "https://github.com/iswbm/python-guide"
-                    },
-                ]
-            },
-            {
-                "name": "撩我",
-                "sub_button": [
-                    {
-                        "type": "click",
-                        "name": "商务合作",
-                        "key": "wechat"
-                    },
-                    {
-                        "type": "click",
-                        "name": "技术交流",
-                        "key": "wechat"
-                    }
-                ]
-            }
-        ]})
-
-def delete_menu():
-    client.delete_menu()
 
 @click.group()
 def handle():
@@ -412,22 +372,23 @@ def handle():
 
 @handle.command()
 def deamon():
-    robot.config['HOST'] = '0.0.0.0'
-    robot.config['PORT'] = 8080
-    create_memu()
+    robot.config['HOST'] = cfg_dict["werobot"]["host"]
+    robot.config['PORT'] = cfg_dict["werobot"]["port"]
+    WerobotBackend(robot, dbclient=db)
+    client.create_menu(cfg_dict["werobot"]["menu"])  # client.delete_menu()
     robot.run()
 
+
 @handle.command()
-@click.argument('source', type=click.STRING)
-def qrcode(source):
-    get_qr_code(source)
+@click.argument('path', type=click.STRING)
+def uploadpic(path):
+    upload_image_media(client, path)
+
 
 @handle.command()
 @click.argument('field', type=click.STRING)
 @click.argument("date", default=datetime.now().strftime("%Y-%m-%d"))
 def analyze(field, date):
-    import pandas as pd
-
     # 解决因为中文导致的打印不对齐
     pd.set_option('display.unicode.ambiguous_as_wide', True)
     pd.set_option('display.unicode.east_asian_width', True)

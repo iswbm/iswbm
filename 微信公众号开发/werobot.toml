@@ -1,0 +1,174 @@
+[mysql]
+host     = "xx.xx.xx.xx"
+user     = "root"
+port     = 3306
+database = ""
+password = ""
+
+[werobot]
+
+    host = '0.0.0.0'
+    port = 8080
+
+    [werobot.config]
+    APP_ID     = ""
+    APP_SECRET = ""
+
+    [werobot.media]
+    wechat_media_id="DRoZL-mq_4ZH0KQ3CR5NuCeXPH20HP5QO8-JT4qM3Ro"
+    signal_media_id="DRoZL-mq_4ZH0KQ3CR5NuOxT5jau_9PHD3EWzb4t8ls"
+
+    [werobot.keyword]
+
+    [werobot.keyword.string]
+    vip  = '<a href="https://my.openwrite.cn/code/generate?blogId=15406-1578143418297-890">点击该链接，获取博客解锁验证码</a>'
+    VIP  = '<a href="https://my.openwrite.cn/code/generate?blogId=15406-1578143418297-890">点击该链接，获取博客解锁验证码</a>'
+    1024 = '<a href="https://my.openwrite.cn/code/generate?blogId=15406-1578143418297-890">点击该链接，获取博客解锁验证码</a>'
+    more = '<a href="https://my.openwrite.cn/code/generate?blogId=15406-1578143418297-890">点击该链接，获取博客解锁验证码</a>'
+
+    "解压密码" = '解压密码：iswbm.com'
+    pycharm = 'PyCharm 绿色免安装版：<a href="http://image.iswbm.com/20201112213705.png">点此下载</a>'
+
+    pycharm_keymap='链接: https://pan.baidu.com/s/15PidFrkVpU4a4PAjDfULWQ 密码: 498b'
+
+    pjgo = "Goland 绿色免安装 2020.1下载:https://590m.com/dir/7369060-32982070-4ce196"
+    pjpy = "链接: https://pan.baidu.com/s/1otTn5SlkoptV4SOdXi-gAQ  密码: b6lb"
+    pjcj = "破解插件: https://wws.lanzous.com/iH95Ckq0dba"
+
+    PDF = '''《PyCharm 中文指南》 PDF
+下载链接: https://pan.baidu.com/s/1ZwVhWHFtMU3qO2jwLcpaTA
+提取密码: 8bi6
+
+《Python 黑魔法指南》 PDF
+下载链接： https://pan.baidu.com/s/1t7c03aG2y91z3F5vHJGh4w
+提取码：ruot
+
+这两本书我都开源在 Github 上，你可以前往在线阅读：https://github.com/iswbm
+原创不易，如果书对你有用，不妨点个star 支持一下
+
+另附上：<a href="http://image.iswbm.com/20201112213705.png">2020.2 绿色免安装专业版下载地址，点击即跳转</a>'''
+    pdf = '''《PyCharm 中文指南》 PDF
+下载链接: https://pan.baidu.com/s/1ZwVhWHFtMU3qO2jwLcpaTA
+提取密码: 8bi6
+
+《Python 黑魔法指南》 PDF
+下载链接： https://pan.baidu.com/s/1t7c03aG2y91z3F5vHJGh4w
+提取码：ruot
+
+这两本书我都开源在 Github 上，你可以前往在线阅读：https://github.com/iswbm
+原创不易，如果书对你有用，不妨点个star 支持一下
+
+另附上：<a href="http://image.iswbm.com/20201112213705.png">2020.2 绿色免安装专业版下载地址，点击即跳转</a>'''
+    666 = '''《PyCharm 中文指南》 PDF
+下载链接: https://pan.baidu.com/s/1ZwVhWHFtMU3qO2jwLcpaTA
+提取密码: 8bi6
+
+《Python 黑魔法指南》 PDF
+下载链接： https://pan.baidu.com/s/1t7c03aG2y91z3F5vHJGh4w
+提取码：ruot
+
+这两本书我都开源在 Github 上，你可以前往在线阅读：https://github.com/iswbm
+原创不易，如果书对你有用，不妨点个star 支持一下
+
+另附上：<a href="http://image.iswbm.com/20201112213705.png">2020.2 绿色免安装专业版下载地址，点击即跳转</a>'''
+    "黑魔法" = '''《PyCharm 中文指南》 PDF
+下载链接: https://pan.baidu.com/s/1ZwVhWHFtMU3qO2jwLcpaTA
+提取密码: 8bi6
+
+《Python 黑魔法指南》 PDF
+下载链接： https://pan.baidu.com/s/1t7c03aG2y91z3F5vHJGh4w
+提取码：ruot
+
+这两本书我都开源在 Github 上，你可以前往在线阅读：https://github.com/iswbm
+原创不易，如果书对你有用，不妨点个star 支持一下
+
+另附上：<a href="http://image.iswbm.com/20201112213705.png">2020.2 绿色免安装专业版下载地址，点击即跳转</a>'''
+
+    [werobot.keyword.regex]
+    "快捷键" = '链接: https://pan.baidu.com/s/15PidFrkVpU4a4PAjDfULWQ  密码: 498b'
+
+    [werobot.keyword.lottery.226]
+    media_id    = "DRoZL-mq_4ZH0KQ3CR5NuCeXPH20HP5QO8-JT4qM3Ro"
+    article_url = "https://mp.weixin.qq.com/s/mDgWw20xL11qVjXnmAKv2w"
+    remark = "这次抽奖中奖率极高，为了怕开奖后太多人一下子加我微信，我这边有可能被微信限制，大家最好提前添加我的微信(hello-wbm)占个位。"
+
+    [werobot.keyword.lottery.122]
+    media_id    = "mEloyztypmjpHsAx8NnTl2gJXmO0Im69zFC0qApICKg"
+    article_url = "https://mp.weixin.qq.com/s/ZyxyshIWAHr0hGvDOIvj1Q"
+    remark = "这次抽奖中奖率极高，为了怕开奖后太多人一下子加我微信，我这边有可能被微信限制，大家最好提前添加我的微信(hello-wbm)占个位。"
+
+    [werobot.common]
+    blog = "明哥教程(博客)：https://iswbm.com，请使用PC访问"
+    in_black_list = "由于您之前取关过本公众号，所以无法为您提供服务！如需解除限制，请联系管理员微信: hello-wbm, 需要支付 8.8 红包"
+    welcome='''嗨，{}，你好啊~
+我是明哥，恭喜你关注了一个超级干货的公众号，不信？不信你回复 "m" 看看 ^_^
+
+另外，明哥为你精心准备了一份新粉福利： <a href="https://mp.weixin.qq.com/s/wZKQi9wV5uXSP6xq4y9Aqw"> 超强 Python数据分析资料送给你！ 点击链接免费领取！</a>
+
+回复 "m"，可以获取明哥为你准备的干货目录（入门、进阶、高级都有）~'''
+
+    [werobot.resource]
+    dball  = "链接:https://pan.baidu.com/s/1fs1HabmaqezaLxLbHCcqYQ  密码:v1mu"
+    love   = "表白神器源代码：https://wws.lanzous.com/ijcaplnyrdi"
+    thonny = "你个笨蛋，仔细看文章啦，不是这里回复~"
+
+    "可视化" = "链接: https://pan.baidu.com/s/192Flr9d9vYlGpgUOtQkg-A  密码: vm89"
+    "表白"   = "你个笨蛋，仔细看文章啦，不是这里回复~"
+    "打包"   = "打包案例所用素材：https://pan.baidu.com/s/1GsASKTrIqBaqO5UeVnC2wA 提取码：kxpy"
+
+
+    [[werobot.menu.button]]
+        name = "专辑"
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "玩转PyCharm"
+        url  = "https://mp.weixin.qq.com/mp/appmsgalbum?action=getalbum&album_id=1340148857610665984&__biz=MzIzMzMzOTI3Nw==#wechat_redirect"
+
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "炫技Python"
+        url  = "https://mp.weixin.qq.com/mp/appmsgalbum?action=getalbum&album_id=1337068682018783233&__biz=MzIzMzMzOTI3Nw==#wechat_redirect"
+
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "魔法Python"
+        url  = "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIzMzMzOTI3Nw==&action=getalbum&album_id=1340152345426100225&subscene=7&scenenote=https%3A%2F%2Fmp.weixin.qq.com%2Fs%3Fsubscene%3D19%26__biz%3DMzIzMzMzOTI3Nw%3D%3D%26mid%3D2247488243%26idx%3D1%26sn%3D66d2f534ddcbed582e7ba734b53701f5%26chksm%3De8867211dff1fb07f2edcebfda9e7863ee57266c15d4276bc89c2ee69baafc46fbc0e85fe703%26scene%3D7%26ascene%3D65%26devicetype%3Dandroid-29%26version%3D27000f51%26nettype%3Dctnet%26abtest_cookie%3DAAACAA%253D%253D%26lang%3Dzh_CN%26exportkey%3DAerAZgOLrSJ6vHyR3%252Fk312Y%253D%26pass_ticket%3DfLnMjZ75NwdZ5OcrAR9mC67sozERzH%252BbWpuzW1CoqPapSKOXuBu4fhWVvA2PD%252BbD%26wx_header%3D1#wechat_redirect"
+
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "网络知识"
+        url  = "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIzMzMzOTI3Nw==&action=getalbum&album_id=1364495679313526785&subscene=126&scenenote=https%3A%2F%2Fmp.weixin.qq.com%2Fs%3F__biz%3DMzIzMzMzOTI3Nw%3D%3D%26mid%3D2247488684%26idx%3D1%26sn%3D9a9d717a6c00f978c6575cb934c5c942%26chksm%3De886744edff1fd58ebb593338484013442c8c2f481497d6c5246cabce3ad43c1ee28299f9098%26sessionid%3D1593701876%26scene%3D126%26subscene%3D0%26clicktime%3D1593701884%26enterid%3D1593701884%26ascene%3D3%26devicetype%3Dandroid-29%26version%3D27000f51%26nettype%3Dctnet%26abtest_cookie%3DAAACAA%253D%253D%26lang%3Dzh_CN%26exportkey%3DAc2rrxCo%252F%252BJnajNY%252BHGkbtU%253D%26pass_ticket%3DfLnMjZ75NwdZ5OcrAR9mC67sozERzH%252BbWpuzW1CoqPapSKOXuBu4fhWVvA2PD%252BbD%26wx_header%3D1#wechat_redirect"
+
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "原创爆文"
+        url  = "https://mp.weixin.qq.com/mp/appmsgalbum?action=getalbum&album_id=1340104431223930880&__biz=MzIzMzMzOTI3Nw==#wechat_redirect"
+
+    [[werobot.menu.button]]
+        name = "指路"
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "暗号"
+        url  = "https://t.1yb.co/7b2A"
+
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "投稿"
+        url  = "https://t.1yb.co/71U5"
+
+        [[werobot.menu.button.sub_button]]
+        type = "view"
+        name = "目录"
+        url  = "https://github.com/iswbm/PythonCodingTime"
+
+    [[werobot.menu.button]]
+        name = "撩我"
+        [[werobot.menu.button.sub_button]]
+        type = "click"
+        name = "商务合作"
+        key  = "business"
+
+        [[werobot.menu.button.sub_button]]
+        type = "click"
+        name = "加技术群"
+        key  = "communication"
