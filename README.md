@@ -20,7 +20,7 @@ Here are some ideas to get you started:
 - 👉  个人主页：https://iswbm.com/
 - 📖 1️⃣ 电子书《Python中文指南》：http://python.iswbm.com
 - 📖 2️⃣ 电子书《Python黑魔法指南》：http://magic.iswbm.com
-- 📖 3️⃣ 电子书《PyCharm中文指南》：http://python.iswbm.com
+- 📖 3️⃣ 电子书《PyCharm中文指南》：http://pycharm.iswbm.com
 - 📖 4️⃣ 电子书《Go编程时光》：http://golang.iswbm.com
 - ✅ 微信公众号：『Python编程时光』 和『Go编程时光』
 
