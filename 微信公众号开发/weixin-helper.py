@@ -38,7 +38,6 @@ class MYSQL:
         self.session = DBsession()
         self.create_db_table()
 
-
     def create_db_table(self):
         Base.metadata.create_all(self.engine, checkfirst=True)
 
@@ -196,10 +195,15 @@ class WerobotBackend:
             reply = ImageReply(message=message, media_id="mEloyztypmjpHsAx8NnTlz4c8GiuEUxnBULz135LaF0")
             return reply
 
+        def whitelist(message):
+            reply = ImageReply(message=message, media_id="mEloyztypmjpHsAx8NnTl5A1XSyF37zbEriN81PNMxE")
+            return reply
+
         self.robot.subscribe(subscribe)
         self.robot.unsubscribe(unsubscribe)
         self.robot.key_click("communication")(communication)
         self.robot.key_click("business")(business)
+        self.robot.key_click("whitelist")(whitelist)
 
     def register_keywords(self):
         @save_data_and_check_black_list(dbclient=self.dbclient)
@@ -260,7 +264,6 @@ class WerobotBackend:
             else:
                 return "今日暂无黑名单"
 
-
         @save_data_and_check_black_list(dbclient=self.dbclient)
         def get_signal_info(message):
             reply = ImageReply(message=message, media_id=media_ids["signal_media_id"])
@@ -287,8 +290,8 @@ class WerobotBackend:
                 title="三年的 Python 精华文章汇总",
                 description="专属于「{}」的干货目录".format(user_info["nickname"]),
                 img="https://mmbiz.qpic.cn/mmbiz_jpg/UFM3uMlAXxMehvNJYJ5uwlE1n2rfwbUkHl4MXaBUJO8xflmdLmNShqK9iaMQaLeqbpLbicGHe5V8MyibmhZ9lqbkA/0?wx_fmt=jpeg",
-                # url="https://t.1yb.co/69Kw"
-                url="https://github.com/iswbm/PythonCodingTime"
+                url="https://t.1yb.co/69Kw"
+                # url="https://github.com/iswbm/PythonCodingTime"
             )
             reply.add_article(article)
             return reply
@@ -363,7 +366,6 @@ def migrate_users_data():
             db.add_subscribe(user_info)
 
         log.info("处理完成")
-
 
 
 @click.group()

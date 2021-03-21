@@ -28,6 +28,7 @@ password = ""
 
     "解压密码" = '解压密码：iswbm.com'
     pycharm = 'PyCharm 绿色免安装版：<a href="http://image.iswbm.com/20201112213705.png">点此下载</a>'
+    "激活码" = 'PyCharm 绿色免安装版：<a href="http://image.iswbm.com/20201112213705.png">点此下载</a>'
 
     pycharm_keymap='链接: https://pan.baidu.com/s/15PidFrkVpU4a4PAjDfULWQ 密码: 498b'
 
@@ -88,7 +89,7 @@ password = ""
     "快捷键" = '链接: https://pan.baidu.com/s/15PidFrkVpU4a4PAjDfULWQ  密码: 498b'
 
     [werobot.keyword.lottery.226]
-    media_id    = "DRoZL-mq_4ZH0KQ3CR5NuCeXPH20HP5QO8-JT4qM3Ro"
+    media_id    = "mEloyztypmjpHsAx8NnTl4SkMd5jHrmf3yqY2FJJybQ"
     article_url = "https://mp.weixin.qq.com/s/mDgWw20xL11qVjXnmAKv2w"
     remark = "这次抽奖中奖率极高，为了怕开奖后太多人一下子加我微信，我这边有可能被微信限制，大家最好提前添加我的微信(hello-wbm)占个位。"
 
@@ -99,14 +100,9 @@ password = ""
 
     [werobot.common]
     blog = "明哥教程(博客)：https://iswbm.com，请使用PC访问"
-    in_black_list = "由于您之前取关过本公众号，所以无法为您提供服务！如需解除限制，请联系管理员微信: hello-wbm, 需要支付 8.8 红包"
+    in_black_list = "由于您之前取关过本公众号，所以无法为您提供服务！如需解除限制，请联系管理员微信: hello-wbm"
     welcome='''嗨，{}，你好啊~
-我是明哥，恭喜你关注了一个超级干货的公众号，不信？不信你回复 "m" 看看 ^_^
-
-另外，明哥为你精心准备了一份新粉福利： <a href="https://mp.weixin.qq.com/s/wZKQi9wV5uXSP6xq4y9Aqw"> 超强 Python数据分析资料送给你！ 点击链接免费领取！</a>
-
-回复 "m"，可以获取明哥为你准备的干货目录（入门、进阶、高级都有）~'''
-
+我是明哥，恭喜你关注了一个超级干货的公众号，不信？不信你回复 "m" 看看 ^_^'''
     [werobot.resource]
     dball  = "链接:https://pan.baidu.com/s/1fs1HabmaqezaLxLbHCcqYQ  密码:v1mu"
     love   = "表白神器源代码：https://wws.lanzous.com/ijcaplnyrdi"
@@ -153,13 +149,13 @@ password = ""
 
         [[werobot.menu.button.sub_button]]
         type = "view"
-        name = "投稿"
+        name = "变现"
         url  = "https://t.1yb.co/71U5"
 
         [[werobot.menu.button.sub_button]]
         type = "view"
         name = "目录"
-        url  = "https://github.com/iswbm/PythonCodingTime"
+        url  = "https://mp.weixin.qq.com/s/IySEKZoqIj1K2rM5_Hx8pw"
 
     [[werobot.menu.button]]
         name = "撩我"
@@ -167,6 +163,11 @@ password = ""
         type = "click"
         name = "商务合作"
         key  = "business"
+
+        [[werobot.menu.button.sub_button]]
+        type = "click"
+        name = "转载开白"
+        key  = "whitelist"
 
         [[werobot.menu.button.sub_button]]
         type = "click"
