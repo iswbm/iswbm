@@ -1005,6 +1005,11 @@ div.code-tooltip-content {
 
 .md-image img {
     border-radius: 4px;
+    border-top:1px solid #ccc;
+    border-right:1px solid #666;
+    border-bottom:2px solid #999;
+    border-left:1px solid #ccc;
+    padding: 7px;
 }
 
 

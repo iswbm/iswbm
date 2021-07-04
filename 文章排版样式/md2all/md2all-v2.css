@@ -142,28 +142,28 @@ h3::before {
 #write>h3.md-focus:before,
 
 
-
-/*-------------*/
-
-
 ul, ol {
   padding-left: 32px;
 }
 ul{ /*无序列表*/
+    color: #db4d52;
     list-style-type: disc;
 }
 ol { /*有序列表*/
+  color: #db4d52;
   list-style-type: decimal;
 }
 li *  
 {
- /* color: #3e3e3e;*/
+  color: #3e3e3e;
+font-size: 15px;
 } 
 
 li{  /*在公众号下，改变不了li符号的属性（如颜色），并会影响其子元素的属性;而在其它博客平台中，则能正常使用*/ 
     margin-bottom: 0.5em;
 /*  color:#159957; */    
 }
+
 .code_size_default  /*代码块默认size*/
 {
   line-height: 18px;
@@ -254,6 +254,12 @@ img
   border-width: 0px;
   border-style: solid;
   border-radius: 4px;
+  background: #f8f8f8;
+  border-top:1px solid #ccc;
+  border-right:1px solid #666;
+  border-bottom:2px solid #999;
+  border-left:1px solid #ccc;
+  padding: 7px;
 }
 figcaption/*图片描述文字*/
 {

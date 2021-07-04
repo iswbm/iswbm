@@ -98,6 +98,17 @@ password = ""
     article_url = "https://mp.weixin.qq.com/s/ZyxyshIWAHr0hGvDOIvj1Q"
     remark = "这次抽奖中奖率极高，为了怕开奖后太多人一下子加我微信，我这边有可能被微信限制，大家最好提前添加我的微信(hello-wbm)占个位。"
 
+    [werobot.keyword.lottery.316]
+    media_id    = "C0qApICKgmjpHsAx8NnTl2gJXmO0Im69zFC0qApICWw"
+    article_url = "https://mp.weixin.qq.com/s/0hGvDOIvj1Hr0Ww20xL11q"
+    remark = "这次抽奖中奖率极高，为了怕开奖后太多人一下子加我微信，我这边有可能被微信限制，大家最好提前添加我的微信(hello-wbm)占个位。"
+
+    [werobot.keyword.lottery.403]
+    media_id    = "0qApICKgmEloyztypmjpHsAx8NnTl2gJXmO0Im69zFC"
+    article_url = "https://mp.weixin.qq.com/s/jXnmAKWAHr0hGvDOAHr0d"
+    remark = "这次抽奖中奖率极高，为了怕开奖后太多人一下子加我微信，我这边有可能被微信限制，大家最好提前添加我的微信(hello-wbm)占个位。"
+
+
     [werobot.common]
     blog = "明哥教程(博客)：https://iswbm.com，请使用PC访问"
     in_black_list = "由于您之前取关过本公众号，所以无法为您提供服务！如需解除限制，请联系管理员微信: hello-wbm"

@@ -219,3 +219,36 @@ table tr td:last-child {
     border-left: 2px solid #ff887a;
 }
 
+/* 图片 */
+img {
+    border-radius: 4px;
+    border-top:1px solid #ccc;
+    border-right:1px solid #666;
+    border-bottom:2px solid #999;
+    border-left:1px solid #ccc;
+    padding: 7px;
+}
+
+.gongzhonghao img {
+    padding: 0px;
+	  border-top:0px;
+    border-right:0px;
+    border-bottom:0px;
+    border-left:0px;
+}
+
+
+/*列表*/
+
+
+
+ul li::marker {
+  color: red;
+  font-size: 1.5em;
+}
+
+ol li::marker {
+  color: #db4d52;
+  font-size: 15px;
+}
+
