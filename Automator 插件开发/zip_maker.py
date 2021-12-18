@@ -7,60 +7,64 @@ import sys
 import shutil
 import commands
 
-zip_pass_png_name = "get_zip_pass_01.png"
 
-def encrypt_file(file):
-    filename, ext = os.path.splitext(file)
-    dir_name = filename
-    os.mkdir(dir_name)
-    shutil.copy(src=file, dst=dir_name)
-    os.chdir(dir_name)
-    zip_cmd = '/usr/bin/zip -P "iswbm.com" "{}.zip" "{}"'.format(filename, file)
-    zip_cmd_no_pass = '/usr/bin/zip -r "{}.zip" "{}"'.format(dir_name, dir_name)
-    wget_cmd = '/usr/local/bin/wget -q http://image.iswbm.com/' + zip_pass_png_name
+def encrypt_file():
+    # 创建新目录，并移动文件到新目录中
+    new_dir_name, ext = os.path.splitext(file_name)
+    os.mkdir(new_dir_name)
+    shutil.copy(src=file_name, dst=new_dir_name)
+    os.chdir(new_dir_name)
 
+    # 加密压缩
+    zip_cmd = '/usr/bin/zip -P "iswbm.com" "{}.zip" "{}"'.format(new_dir_name, file_name)
     commands.getstatusoutput(zip_cmd)
-    commands.getstatusoutput(wget_cmd)
-    os.rename(zip_pass_png_name, "解压密码，看这里.png")
-    os.remove(file)
+    os.remove(file_name)
 
+    # 下载提示图片
+    wget_cmd = '/opt/homebrew/bin/wget -q http://image.iswbm.com/get_zip_pass_04.png -O 解压密码，看这里.png'
+    commands.getstatusoutput(wget_cmd)
+
+    # 无密压缩
     os.chdir("..")
+    zip_cmd_no_pass = '/usr/bin/zip -r "{}-res.zip" "{}"'.format(new_dir_name, new_dir_name)
     commands.getstatusoutput(zip_cmd_no_pass)
+    shutil.rmtree(new_dir_name)
+
+    print("Success!")
+
+
+def encrypt_file_folder():
+    os.mkdir("tmp")
+    shutil.copytree(src=dir_name, dst="tmp/{}".format(dir_name))
+    os.chdir("tmp")
+
+    # 加密压缩
+    zip_cmd = '/usr/bin/zip -r -P "iswbm.com" "{}.zip" "{}"'.format(dir_name, dir_name)
+    commands.getstatusoutput(zip_cmd)
     shutil.rmtree(dir_name)
-    print("Success!")
 
-def encrypt_dir(dirname):
-    new_dir = "{} (双击解压)".format(dirname)
-    shutil.copytree(src=dirname, dst=new_dir)
-    os.chdir(new_dir)
-    zip_cmd = '/usr/bin/zip -P "iswbm.com" "{}.zip" -r *'.format(dirname)
-    zip_cmd_no_pass = '/usr/bin/zip -r "{}.zip" -r "{}"'.format(new_dir, new_dir)
-    wget_cmd = '/usr/local/bin/wget -q http://image.iswbm.com/' + zip_pass_png_name
-
-    commands.getstatusoutput(zip_cmd)
+    # 下载提示图片
+    wget_cmd = '/opt/homebrew/bin/wget -q http://image.iswbm.com/get_zip_pass_04.png -O 解压密码，看这里.png'
     commands.getstatusoutput(wget_cmd)
-    os.rename(zip_pass_png_name, "解压密码，看这里.png")
-    for home, dirs, files in os.walk("."):
-        for file in files:
-            if file in ("解压密码，看这里.png", "{}.zip".format(dirname)):
-                continue
-            os.remove(file)
 
-        for dir in dirs:
-            os.removedirs(dir)
-
-    os.chdir("..")
+    # 无密压缩
+    zip_cmd_no_pass = '/usr/bin/zip -r "{}-res.zip" ./'.format(dir_name, dir_name)
     commands.getstatusoutput(zip_cmd_no_pass)
-    shutil.rmtree(new_dir)
+    os.remove("解压密码，看这里.png")
+
+    # 移动压缩包到外面
+    shutil.copyfile("{}-res.zip".format(dir_name), "../{}-res.zip".format(dir_name))
+    os.chdir("..")
+    shutil.rmtree("tmp")
     print("Success!")
 
-def encrypt(target):
-    if os.path.isfile(target):
-        encrypt_file(target)
-    else:
-        encrypt_dir(target)
 
-for file in sys.stdin:
-    dir,file = os.path.split(file.strip())
-    os.chdir(dir)
-    encrypt(file)
+for target_path in sys.stdin:
+    dir_path, file_or_dir_name = os.path.split(target_path.strip())
+    os.chdir(dir_path)
+    if os.path.isfile(target_path.strip()):
+        file_name = file_or_dir_name
+        encrypt_file()
+    else:
+        dir_name = file_or_dir_name
+        encrypt_file_folder()
