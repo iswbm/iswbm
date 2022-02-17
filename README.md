@@ -40,7 +40,7 @@ Here are some ideas to get you started:
 - 4️⃣  [《Go编程时光》](http://golang.iswbm.com)
 - 5️⃣  [《大白话K8S》](http://k8s.iswbm.com)
 
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="10" height="10"/> **Wechat Official Accounts**
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="20" height="20"/> **Wechat Official Accounts**
 
 - <img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="20" height="20"/> 搜 “写点代码的明哥”
 - <img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="20" height="20"/> 搜 “Python 编程时光”
