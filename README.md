@@ -22,18 +22,18 @@ Here are some ideas to get you started:
 **🌈 Languages and Tools:**
 
 <p align="left">
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/python-original.svg" alt="python" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/linux-original.svg" alt="linux" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/go-original.svg" alt="go" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/kubernetes-plain.svg" alt="kubernetes" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/kubevirt.svg" alt="vuejs" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/docker.svg" alt="vuejs" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/openstack.svg" alt="vuejs" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/vuejs-original.svg" alt="vuejs" width="40" height="40"/>
-<img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/vuejs-original.svg" alt="vuejs" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/python-original.svg" alt="python" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/linux-original.svg" alt="linux" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/go-original.svg" alt="go" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/kubernetes-plain.svg" alt="kubernetes" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/kubevirt.svg" alt="vuejs" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/docker.svg" alt="vuejs" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/openstack.svg" alt="vuejs" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/vuejs-original.svg" alt="vuejs" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/vuejs-original.svg" alt="vuejs" width="40" height="40"/>
 </p>
 
-** 📖 Ebooks **
+**📖 Ebooks**
 
 - 1️⃣  [《Python中文指南》](http://python.iswbm.com)
 - 2️⃣  [《Python黑魔法指南》](http://magic.iswbm.com)
@@ -41,8 +41,8 @@ Here are some ideas to get you started:
 - 4️⃣  [《Go编程时光》](http://golang.iswbm.com)
 - 5️⃣  [《大白话K8S》](http://k8s.iswbm.com)
 
-** Wechat Official Accounts **
+**Wechat Official Accounts**
 
-- <img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/wechat.svg" alt="wechat" width="40" height="40"/> 搜 “写点代码的明哥”
-- <img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/wechat.svg" alt="wechat" width="40" height="40"/> 搜 “Python 编程时光”
-- <img src="https://raw.githubusercontent.com/iswbm/iswbm/master/assets/wechat.svg" alt="wechat" width="40" height="40"/> 搜 “Go 编程时光”
+- <img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="40" height="40"/> 搜 “写点代码的明哥”
+- <img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="40" height="40"/> 搜 “Python 编程时光”
+- <img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="40" height="40"/> 搜 “Go 编程时光”
