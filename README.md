@@ -34,11 +34,12 @@ Here are some ideas to get you started:
 
 **📖 Ebooks**
 
-- 1️⃣  [《Python中文指南》](http://python.iswbm.com)
-- 2️⃣  [《Python黑魔法指南》](http://magic.iswbm.com)
-- 3️⃣  [《PyCharm中文指南》](http://pycharm.iswbm.com)
-- 4️⃣  [《Go编程时光》](http://golang.iswbm.com)
-- 5️⃣  [《大白话K8S》](http://k8s.iswbm.com)
+- 1️⃣  [《Python中文指南》](https://python.iswbm.com)
+- 2️⃣  [《Python黑魔法指南》](https://magic.iswbm.com)
+- 3️⃣  [《PyCharm中文指南》](https://pycharm.iswbm.com)
+- 4️⃣  [《Go编程时光》](https://golang.iswbm.com)
+- 5️⃣  [《Go语言面试宝典》](https://go-interview.iswbm.com)
+- 6️⃣  [《大白话K8S》](https://k8s.iswbm.com)
 
 <img src="https://raw.githubusercontent.com/iswbm/iswbm/main/assets/wechat.svg" alt="wechat" width="20" height="20"/> **Wechat Official Accounts**
 
